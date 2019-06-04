@@ -28,35 +28,32 @@ public class CardStackView extends RecyclerView {
     }
 
     @Override
-    public void setLayoutManager(LayoutManager manager) {
-        if (manager instanceof CardStackLayoutManager) {
-            super.setLayoutManager(manager);
-        } else {
-            throw new IllegalArgumentException("CardStackView must be set CardStackLayoutManager.");
-        }
-    }
-
-    @Override
     public void setAdapter(Adapter adapter) {
         if (getLayoutManager() == null) {
             setLayoutManager(new CardStackLayoutManager(getContext()));
         }
-        // Imitate RecyclerView's implementation
-        // http://tools.oesf.biz/android-9.0.0_r1.0/xref/frameworks/base/core/java/com/android/internal/widget/RecyclerView.java#1005
-        if (getAdapter() != null) {
-            getAdapter().unregisterAdapterDataObserver(observer);
-            getAdapter().onDetachedFromRecyclerView(this);
+
+        if (getLayoutManager() instanceof CardStackLayoutManager) {
+            // Imitate RecyclerView's implementation
+            // http://tools.oesf.biz/android-9.0.0_r1.0/xref/frameworks/base/core/java/com/android/internal/widget/RecyclerView.java#1005
+            if (getAdapter() != null) {
+                getAdapter().unregisterAdapterDataObserver(observer);
+                getAdapter().onDetachedFromRecyclerView(this);
+            }
+            adapter.registerAdapterDataObserver(observer);
         }
-        adapter.registerAdapterDataObserver(observer);
+
         super.setAdapter(adapter);
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            CardStackLayoutManager manager = (CardStackLayoutManager) getLayoutManager();
-            if (manager != null) {
-                manager.updateProportion(event.getX(), event.getY());
+        if (getLayoutManager() instanceof CardStackLayoutManager) {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                CardStackLayoutManager manager = (CardStackLayoutManager) getLayoutManager();
+                if (manager != null) {
+                    manager.updateProportion(event.getX(), event.getY());
+                }
             }
         }
         return super.onInterceptTouchEvent(event);
